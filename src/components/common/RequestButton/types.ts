@@ -37,7 +37,7 @@ type Empty = {};
 
 export type RequestButtonTypeMap<
   P = Empty,
-  D extends React.ElementType = "button"
+  D extends React.ElementType = "button",
 > = ExtendButtonTypeMap<{
   props: P & RequestButtonExtraProps;
   defaultComponent: D;
@@ -45,5 +45,5 @@ export type RequestButtonTypeMap<
 
 export type RequestButtonProps<
   D extends React.ElementType = RequestButtonTypeMap["defaultComponent"],
-  P = Empty
+  P = Empty,
 > = OverrideProps<RequestButtonTypeMap<P, D>, D>;

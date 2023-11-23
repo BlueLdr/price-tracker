@@ -9,4 +9,4 @@ project_dir="${this_script_dir}/.."
 cd "${project_dir}"
 
 command="${1:-write}"
-"$(npm bin)/prettier" "--$command" '*.json' "./{src,tools}/**/*.{ts,tsx,js,jsx,json}"
+npx prettier "--$command" '*.json' "./{src,tools}/**/*.{ts,tsx,js,jsx,json}"

@@ -49,34 +49,38 @@ const disableYSpacingStyle: StyleProps = {
  * Wraps each of its children in a <Grid item> element, and renders them inside
  * a <Grid container> element. All props are passed to the <Grid container>
  */
-const SpacedGrid: React.ForwardRefRenderFunction<HTMLDivElement, SpacedGridProps> = (
-  ({ children, disableOrthogonalSpacing, ...props }: SpacedGridProps, ref: React.ForwardedRef<HTMLDivElement>) => {
-    const gridChildren = useMemo(() => wrapGridChildren(children), [children]);
-    return (
-      <Grid
-        ref={ref}
-        {...props}
-        sx={
-          disableOrthogonalSpacing
-            ? deepmerge<StyleProps>(
-                props.direction === "column" ||
-                  props.direction === "column-reverse"
-                  ? disableXSpacingStyle
-                  : disableYSpacingStyle,
-                props.sx ?? {}
-              )
-            : props.sx
-        }
-        className={classNames("MuiGrid-spaced", props.className)}
-        container={true}
-      >
-        {gridChildren}
-      </Grid>
-    );
-  }
-) as (<C extends React.ElementType>(
-    props: GridProps<C, { component?: C }>
-  ) => React.ReactElement | null);
+const SpacedGrid: React.ForwardRefRenderFunction<
+  HTMLDivElement,
+  SpacedGridProps
+> = ((
+  { children, disableOrthogonalSpacing, ...props }: SpacedGridProps,
+  ref: React.ForwardedRef<HTMLDivElement>,
+) => {
+  const gridChildren = useMemo(() => wrapGridChildren(children), [children]);
+  return (
+    <Grid
+      ref={ref}
+      {...props}
+      sx={
+        disableOrthogonalSpacing
+          ? deepmerge<StyleProps>(
+              props.direction === "column" ||
+                props.direction === "column-reverse"
+                ? disableXSpacingStyle
+                : disableYSpacingStyle,
+              props.sx ?? {},
+            )
+          : props.sx
+      }
+      className={classNames("MuiGrid-spaced", props.className)}
+      container={true}
+    >
+      {gridChildren}
+    </Grid>
+  );
+}) as <C extends React.ElementType>(
+  props: GridProps<C, { component?: C }>,
+) => React.ReactElement | null;
 SpacedGrid.displayName = "SpacedGrid";
 
-export default forwardRef(SpacedGrid)
+export default forwardRef(SpacedGrid);

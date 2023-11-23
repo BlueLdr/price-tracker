@@ -11,6 +11,7 @@ import {
 import { AppContext } from "~/context";
 import { removeItemFrom, replaceItemIn } from "~/utils";
 import { AddGroupModal, DeleteGroupModal } from "./Group";
+import { ImportModal } from "./Import";
 
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -87,6 +88,7 @@ export const Main: React.FC = () => {
       <AddProductModal />
       <DeleteProductModal />
       <EditProductModal />
+      <ImportModal />
     </>
   );
 };
