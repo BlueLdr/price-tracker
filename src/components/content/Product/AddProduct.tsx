@@ -49,7 +49,7 @@ export const AddProductModal: React.FC = () => {
         })
         .catch(err => {
           console.error(`Failed to preview link ${initialUrl}:`, err);
-          setScrapeError(err);
+          setScrapeError(typeof err === "object" ? err.toString() : err);
         });
     } catch {
       return;

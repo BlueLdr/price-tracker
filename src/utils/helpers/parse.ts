@@ -60,6 +60,12 @@ const SITE_PARSER_MAP: Record<
     productName: doc => doc.getElementById("productTitle")?.textContent ?? "",
     siteName: () => "Amazon",
   },
+  "www.lowes.com": {
+    currentPrice: doc => parsePrice(doc.querySelector(".main-price")?.textContent || getElementByXPath(doc, '//*[contains(text(),"finalPrice")]')?.textContent?.replace(/.*"finalPrice":\s*([0-9.]+).*/i, "$1"))
+  },
+  "www.homedepot.com": {
+    currentPrice: doc => parsePrice(doc.querySelector(".main-price")?.textContent || getElementByXPath(doc, "//*[contains(text(),'\"price\"')]")?.textContent?.replace(/.*"price":\s*([0-9.]+).*/i, "$1"))
+  }
 };
 
 const DEFAULT_PARSER: { [K in ParseableProperty]: PropertyParser<K> } = {
@@ -102,17 +108,16 @@ export const parsePageData = (
   } else {
     doc = data;
   }
-  console.log(`url.hostname: `, url.hostname);
 
   return {
     url: url.href,
     timestamp: Date.now(),
-    siteName: getParser(url, "siteName")(doc) || url.origin,
-    productName: getParser(url, "productName")(doc),
+    siteName: (getParser(url, "siteName")(doc) || url.origin)?.trim(),
+    productName: (getParser(url, "productName")(doc))?.trim(),
     imageUrl: getParser(url, "imageUrl")(doc),
     currentPrice: getParser(url, "currentPrice")(doc),
     siteIconUrl: `https://s2.googleusercontent.com/s2/favicons?domain_url=${encodeURIComponent(
-      url.href,
+      url.hostname,
     )}`,
   };
 };
