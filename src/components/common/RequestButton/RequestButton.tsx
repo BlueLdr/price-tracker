@@ -1,3 +1,4 @@
+"use client";
 /**
  * This was copied from the MUI Button source code and modified
  */

@@ -1,3 +1,4 @@
+"use client";
 import { useContext, useState } from "react";
 
 import { AppContext } from "~/context";
@@ -24,7 +25,7 @@ export const ImportModal: React.FC = () => {
     window.location.reload();
   };
 
-  if (groups.length) {
+  if (groups?.length) {
     return null;
   }
   return (

@@ -1,13 +1,5 @@
 const FALLBACK_MESSAGE = "An unknown error occurred.";
 
-export interface DisplayableError {
-  raw: Error | object | string;
-  message: string;
-  title?: string;
-  code?: string | number;
-  status?: number;
-}
-
 export class DisplayableError {
   constructor(
     error: Error | object | string,

@@ -2,15 +2,14 @@
   "name": "price-checker",
   "private": true,
   "version": "0.0.0",
-  "main": "src/index.tsx",
   "scripts": {
-    "start": "vite",
-    "build": "./scripts/build.sh",
-    "preview": "vite preview",
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "clean": "./scripts/clean.sh",
     "format": "./scripts/format.sh",
     "format-validate": "npm run format -- list-different",
-    "lint": "npx eslint . -c .eslintrc.js --fix",
     "ts-validate": "tsc --project tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -20,8 +19,10 @@
     "@mui/material": "5.14.18",
     "axios": "1.6.2",
     "deepmerge": "4.3.1",
+    "next": "14.0.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "swr": "2.2.4"
   },
   "devDependencies": {
     "@types/node": "20.4.9",
@@ -29,8 +30,6 @@
     "@types/react-dom": "18.2.7",
     "@typescript-eslint/eslint-plugin": "6.3.0",
     "@typescript-eslint/parser": "6.3.0",
-    "@vitejs/plugin-basic-ssl": "1.0.2",
-    "@vitejs/plugin-react": "4.0.4",
     "eslint": "8.47.0",
     "eslint-config-react-app": "7.0.1",
     "eslint-import-resolver-typescript": "3.6.0",
@@ -38,11 +37,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "prettier": "3.0.1",
-    "typescript": "5.1.6",
-    "vite": "4.4.9",
-    "vite-plugin-singlefile": "0.13.5",
-    "vite-plugin-svgr": "3.2.0",
-    "vite-tsconfig-paths": "4.2.0"
+    "typescript": "5.1.6"
   },
   "prettier": {
     "proseWrap": "always",

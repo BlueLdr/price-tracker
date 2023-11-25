@@ -1,38 +1,56 @@
 {
   "compilerOptions": {
     "baseUrl": "./src",
-    "target": "ESNext",
+    "target": "ES6",
     "useDefineForClassFields": true,
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
     /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-
+    "jsx": "preserve",
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
     /* Custom settings */
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "importsNotUsedAsValues": "error",
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "~/*": ["./*"]
-    }
+      "~/*": [
+        "./*"
+      ]
+    },
+    "incremental": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": [
+    "next-env.d.ts",
+    "next.config.cjs",
+    ".eslintrc.json",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.cjs",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

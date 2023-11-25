@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   SpacedGrid,
@@ -8,7 +8,6 @@ import {
   EditProductModal,
   EditGroupModal,
 } from "~/components";
-import { AppContext } from "~/context";
 import { removeItemFrom, replaceItemIn } from "~/utils";
 import { AddGroupModal, DeleteGroupModal } from "./Group";
 import { ImportModal } from "./Import";
@@ -17,12 +16,14 @@ import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import AddIcon from "@mui/icons-material/Add";
 
-import type { ProductGroup, Updater } from "~/utils";
+import type { ProductGroup, Updater, WithStateHook } from "~/utils";
 
 //================================================
 
-export const Main: React.FC = () => {
-  const { groups, setGroups } = useContext(AppContext);
+export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
+  groups,
+  setGroups,
+}) => {
   const updateGroup = useCallback<Updater<ProductGroup, "name">>(
     (id, newGroup) => {
       setGroups(curGroups =>

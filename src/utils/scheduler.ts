@@ -31,7 +31,7 @@ interface ScheduledRequest extends QueuedRequest {
 
 //================================================
 
-class ScrapeSchedulerClass {
+export class ScrapeScheduler {
   private timer: any = null;
   private queue: QueuedRequest[] = [];
   private scheduledQueue: ScheduledRequest[] = [];
@@ -185,10 +185,4 @@ class ScrapeSchedulerClass {
     }
     debugGroupEnd();
   };
-}
-
-export const ScrapeScheduler = new ScrapeSchedulerClass();
-if (DEBUG) {
-  // @ts-expect-error: just for debugging
-  window.scheduler = ScrapeScheduler;
 }

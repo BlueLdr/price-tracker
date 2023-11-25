@@ -1,7 +1,8 @@
 import styled from "@emotion/styled";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 
-import { applyListingUpdates, ScrapeScheduler } from "~/utils";
+import { applyListingUpdates } from "~/utils";
+import { AppContext } from "~/context";
 
 import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
@@ -37,20 +38,20 @@ export interface ListingProps {
 }
 
 export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
+  const { scrapeScheduler } = useContext(AppContext);
   useEffect(() => {
-    const promise = ScrapeScheduler.enqueueRequest(
-      listing.url,
-      listing.dateUpdated,
-    ).then(async newListing =>
-      updateListing(listing.url, oldListing =>
-        newListing ? applyListingUpdates(newListing, oldListing) : oldListing,
-      ),
-    );
+    const promise = scrapeScheduler
+      ?.enqueueRequest(listing.url, listing.dateUpdated)
+      ?.then(async newListing =>
+        updateListing(listing.url, oldListing =>
+          newListing ? applyListingUpdates(newListing, oldListing) : oldListing,
+        ),
+      );
     return () => {
-      promise.catch(err =>
+      promise?.catch(err =>
         err === "Cancelled" ? undefined : Promise.reject(err),
       );
-      ScrapeScheduler.cancelRequest(listing.url);
+      scrapeScheduler?.cancelRequest(listing.url);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing.dateUpdated]);

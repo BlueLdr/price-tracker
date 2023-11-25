@@ -1,7 +1,9 @@
 import { useCallback, useContext } from "react";
+import styled from "@emotion/styled";
 
 import { Disclosure, Listing, SpacedGrid } from "~/components";
 import { applyProductUpdates, removeItemFrom, replaceItemIn } from "~/utils";
+import { ModalsContext } from "~/context";
 
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -13,8 +15,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 
 import type { Product, ProductListing, Updater } from "~/utils";
-import { ModalsContext } from "~/context";
-import styled from "@emotion/styled";
 
 //================================================
 
