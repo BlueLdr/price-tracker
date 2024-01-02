@@ -25,6 +25,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "importsNotUsedAsValues": "error",
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
@@ -43,7 +44,7 @@
   },
   "include": [
     "next-env.d.ts",
-    "next.config.cjs",
+    "next.config.js",
     ".eslintrc.json",
     "**/*.ts",
     "**/*.tsx",

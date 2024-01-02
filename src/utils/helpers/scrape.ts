@@ -24,7 +24,9 @@ export const scrapeUrl = async (
   } catch {
     return Promise.reject(`Invalid URL "${urlString}"`);
   }
-  const response = await fetch(`/api/scrape?url=${encodeURIComponent(urlString)}`);
+  const response = await fetch(
+    `/api/scrape?url=${encodeURIComponent(urlString)}`,
+  );
   if (response.status < 400 && response.status >= 200) {
     const listing = parsePageData(url, await response.text());
     if (listing) {
