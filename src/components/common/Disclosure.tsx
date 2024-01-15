@@ -14,12 +14,25 @@ import type { ValueAndSetter, WithChildren } from "~/utils";
 import type Paper from "@mui/material/Paper";
 import type { AccordionProps } from "@mui/material/Accordion";
 
-const summaryStyle: StyleProps = {
+//================================================
+
+type ComponentSize = "sm" | "md" | "lg";
+
+//================================================
+
+const summaryStyle = (size: ComponentSize): StyleProps => ({
   background: theme => theme.palette.grey[200],
-  padding: theme => theme.spacing(4, 6),
-  maxHeight: theme => theme.spacing(12),
+  padding: theme =>
+    theme.spacing(
+      size === "sm" ? 2 : size === "md" ? 3 : 4,
+      size === "sm" ? 4 : 6,
+    ),
+  minHeight: size !== "lg" ? 0 : undefined,
+  maxHeight: theme =>
+    theme.spacing(size === "sm" ? 8 : size === "md" ? 10 : 12),
   "&.Mui-expanded": {
-    minHeight: theme => theme.spacing(12),
+    minHeight: theme =>
+      theme.spacing(size === "sm" ? 8 : size === "md" ? 10 : 12),
     borderBottomLeftRadius: theme => theme.spacing(1),
   },
   "& .MuiAccordionSummary-content": {
@@ -27,16 +40,16 @@ const summaryStyle: StyleProps = {
     justifyContent: "space-between",
     alignItems: "center",
   },
-};
+});
 
-const detailsStyle: StyleProps = {
-  padding: theme => theme.spacing(4),
-};
+const detailsStyle = (size: ComponentSize): StyleProps => ({
+  padding: theme => (size === "lg" ? theme.spacing(4) : theme.spacing(2, 4)),
+});
 
-const actionsStyle: StyleProps = {
+const actionsStyle = (size: ComponentSize): StyleProps => ({
   "& > *": {
     transition: "opacity 100ms ease",
-    opacity: 0.1,
+    opacity: size !== "lg" ? 0 : 0.1,
     "&:hover, &:focus, &:focus-visible, &.Mui-focus, &.Mui-focusVisible": {
       opacity: 1,
     },
@@ -47,7 +60,7 @@ const actionsStyle: StyleProps = {
       opacity: 1,
     },
   },
-};
+});
 
 //================================================
 
@@ -63,6 +76,7 @@ export type DisclosureProps<
     header: React.ReactNode;
     actions?: React.ReactNode;
     closeWhenDragged?: boolean;
+    size?: ComponentSize;
   };
 
 export const Disclosure: React.FC<DisclosureProps> = ({
@@ -73,6 +87,8 @@ export const Disclosure: React.FC<DisclosureProps> = ({
   setOpen,
   actions,
   closeWhenDragged,
+  size = "lg",
+  sx,
   ...props
 }) => {
   const { isActive } = useContext(DraggableItemContext);
@@ -82,24 +98,32 @@ export const Disclosure: React.FC<DisclosureProps> = ({
       variant="outlined"
       expanded={!forceClose && open}
       onChange={(_, newOpen) => (forceClose ? undefined : setOpen(newOpen))}
-      sx={{ borderRadius: theme => theme.spacing(2) }}
+      sx={{ borderRadius: theme => theme.spacing(2), ...sx }}
       {...props}
     >
-      <AccordionSummary sx={summaryStyle}>
+      <AccordionSummary sx={summaryStyle(size)}>
         <Box display="flex" alignItems="center">
           {headerIcon && <Box ml={-4}>{headerIcon}</Box>}
-          <Typography>{header}</Typography>
+          <Typography
+            sx={
+              size === "sm"
+                ? { fontSize: theme => theme.spacing(3.75) }
+                : undefined
+            }
+          >
+            {header}
+          </Typography>
         </Box>
         {actions && (
           <AccordionActions
-            sx={actionsStyle}
+            sx={actionsStyle(size)}
             onClick={e => e.stopPropagation()}
           >
             {actions}
           </AccordionActions>
         )}
       </AccordionSummary>
-      <AccordionDetails sx={detailsStyle}>{children}</AccordionDetails>
+      <AccordionDetails sx={detailsStyle(size)}>{children}</AccordionDetails>
     </Accordion>
   );
 };

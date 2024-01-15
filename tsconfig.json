@@ -21,7 +21,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    /*"importsNotUsedAsValues": "error",*/
+    "verbatimModuleSyntax": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,

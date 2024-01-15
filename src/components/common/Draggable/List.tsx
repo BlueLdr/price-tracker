@@ -34,7 +34,6 @@ const getPlacement = (
   threshold = PLACEMENT_THRESHOLD,
 ) => {
   const positionPercent = (mouseY - itemY) / itemHeight;
-  console.log(`positionPercent: `, positionPercent, mouseY, itemY, itemHeight);
   if (positionPercent <= threshold) {
     return "before";
   }
@@ -119,13 +118,6 @@ export const DraggableItemList: React.FC<DraggableItemListProps> = ({
   );
   const listHeight =
     Children.toArray(children).reduce<number>((total, _, index) => {
-      if (muiList) {
-        console.log(
-          `item ${index} height`,
-          (childrenRefs.current.get(index)?.getHeight() ?? 0) +
-            (index === 0 && !muiList ? 0 : spacingPx),
-        );
-      }
       return (
         total +
         (childrenRefs.current.get(index)?.getHeight() ?? 0) +
@@ -136,10 +128,6 @@ export const DraggableItemList: React.FC<DraggableItemListProps> = ({
       ? 0
       : (isDraggingTo ? 1 : isDraggingFrom ? -1 : 0) *
         (heldItemHeight + spacingPx));
-
-  if (muiList) {
-    console.log(`listHeight: `, listHeight);
-  }
 
   //================================================
 
@@ -237,9 +225,6 @@ export const DraggableItemList: React.FC<DraggableItemListProps> = ({
           (isLast && !muiList ? 0 : spacing / 2);
 
         const contentHeight = itemRef?.getHeight() ?? DEFAULT_ITEM_HEIGHT;
-        if (level === dragLevel + 1 && contentHeight > DEFAULT_ITEM_HEIGHT) {
-          // console.log(`${index} contentHeight: `, contentHeight);
-        }
 
         //================================================
 

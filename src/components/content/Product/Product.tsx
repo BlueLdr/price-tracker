@@ -1,9 +1,9 @@
 import { useCallback, useContext } from "react";
 import styled from "@emotion/styled";
 
-import { Disclosure, Draggable, Listing, SpacedGrid } from "~/components";
+import { Disclosure, Draggable, Listing } from "~/components";
 import { applyProductUpdates, removeItemFrom, replaceItemIn } from "~/utils";
-import { DragModeContext, ModalsContext } from "~/context";
+import { DragModeContext, ModalsContext, PrefsContext } from "~/context";
 
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -25,6 +25,13 @@ const Image = styled.img`
 `;
 Image.displayName = "styled(Image)";
 
+const CompactImage = styled.img`
+  width: ${({ theme }) => theme.spacing(20)};
+  height: ${({ theme }) => theme.spacing(20)};
+  object-fit: contain;
+`;
+CompactImage.displayName = "styled(CompactImage)";
+
 //================================================
 
 export interface ProductProps {
@@ -39,6 +46,7 @@ export const ProductView: React.FC<ProductProps> = ({
   updateProduct,
   removeProduct,
 }) => {
+  const { prefs: { compactView = false } = {} } = useContext(PrefsContext);
   const { setDeleteProductTarget, setEditProductTarget, setAddListingTarget } =
     useContext(ModalsContext);
   const { dragEnabled } = useContext(DragModeContext);
@@ -97,6 +105,7 @@ export const ProductView: React.FC<ProductProps> = ({
       header={product.name}
       open={!!product.open && !dragEnabled}
       setOpen={dragEnabled ? () => {} : setOpen}
+      size={compactView ? "sm" : undefined}
       sx={{
         borderLeftColor: "transparent",
       }}
@@ -106,6 +115,7 @@ export const ProductView: React.FC<ProductProps> = ({
           : [
               <IconButton
                 key="add"
+                size={compactView ? "small" : undefined}
                 onClick={() =>
                   setAddListingTarget({
                     target: undefined,
@@ -113,10 +123,11 @@ export const ProductView: React.FC<ProductProps> = ({
                   })
                 }
               >
-                <AddIcon />
+                <AddIcon fontSize="inherit" />
               </IconButton>,
               <IconButton
                 key="edit"
+                size={compactView ? "small" : undefined}
                 onClick={() =>
                   setEditProductTarget({
                     target: product,
@@ -124,10 +135,11 @@ export const ProductView: React.FC<ProductProps> = ({
                   })
                 }
               >
-                <EditIcon />
+                <EditIcon fontSize="inherit" />
               </IconButton>,
               <IconButton
                 key="delete"
+                size={compactView ? "small" : undefined}
                 onClick={() =>
                   setDeleteProductTarget({
                     target: product,
@@ -135,47 +147,59 @@ export const ProductView: React.FC<ProductProps> = ({
                   })
                 }
               >
-                <DeleteIcon />
+                <DeleteIcon fontSize="inherit" />
               </IconButton>,
             ]
       }
     >
       <Grid container alignItems="center" flexWrap="nowrap">
-        {product.imageUrl && <Image src={product.imageUrl} />}
-        <SpacedGrid
-          direction="column"
-          spacing={4}
-          pl={product.imageUrl ? 6 : 36}
-          flex="1 1 auto"
-          alignSelf="flex-start"
-        >
-          {product.listings.length === 0 ? (
-            <Grid
-              container
-              direction="column"
-              alignItems="center"
-              justifyContent="center"
-              p={12}
-              spacing={2}
-            >
-              <Typography>No listings for this product</Typography>
-              <Button startIcon={<AddIcon />} variant="outlined">
-                Add Listing
-              </Button>
-            </Grid>
+        {product.imageUrl &&
+          (compactView ? (
+            <CompactImage src={product.imageUrl} />
           ) : (
-            <List>
-              {product.listings.map(listing => (
-                <Listing
-                  key={listing.url}
-                  listing={listing}
-                  updateListing={updateListing}
-                  removeListing={removeListing}
-                />
-              ))}
-            </List>
-          )}
-        </SpacedGrid>
+            <Image src={product.imageUrl} />
+          ))}
+
+        {product.listings.length === 0 ? (
+          <Grid
+            container
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            p={12}
+            spacing={2}
+          >
+            <Typography>No listings for this product</Typography>
+            <Button startIcon={<AddIcon />} variant="outlined">
+              Add Listing
+            </Button>
+          </Grid>
+        ) : (
+          <List
+            sx={{
+              flex: "1 1 auto",
+              paddingLeft: theme =>
+                theme.spacing(
+                  product.imageUrl
+                    ? compactView
+                      ? 4
+                      : 6
+                    : compactView
+                    ? 24
+                    : 36,
+                ),
+            }}
+          >
+            {product.listings.map(listing => (
+              <Listing
+                key={listing.url}
+                listing={listing}
+                updateListing={updateListing}
+                removeListing={removeListing}
+              />
+            ))}
+          </List>
+        )}
       </Grid>
     </Disclosure>
   );

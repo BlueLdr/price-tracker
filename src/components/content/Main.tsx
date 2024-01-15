@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 
 import {
   Group,
@@ -18,6 +18,7 @@ import Grid from "@mui/material/Grid";
 import AddIcon from "@mui/icons-material/Add";
 
 import type { ProductGroup, Updater, WithStateHook } from "~/utils";
+import { PrefsContext } from "~/context";
 
 //================================================
 
@@ -25,6 +26,7 @@ export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
   groups,
   setGroups,
 }) => {
+  const { prefs: { compactView = false } = {} } = useContext(PrefsContext);
   const updateGroup = useCallback<Updater<ProductGroup, "name">>(
     (id, newGroup) => {
       setGroups(curGroups =>
@@ -59,8 +61,15 @@ export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
     <>
       {/*<DragPlayground />*/}
       <Draggable.Bin updateList={setGroups}>
-        <Grid mx="auto" maxWidth={1080} width="100%" container p={8}>
-          <Draggable.List spacing={6} fullWidth>
+        <Grid
+          mx="auto"
+          maxWidth={1080}
+          width="100%"
+          container
+          px={8}
+          py={compactView ? 4 : 8}
+        >
+          <Draggable.List spacing={compactView ? 4 : 6} fullWidth>
             {groups.map(group => (
               <Group
                 key={group.name}

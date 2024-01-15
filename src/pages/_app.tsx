@@ -1,6 +1,7 @@
 import { AppView } from "~/components";
 import {
   AppContextProvider,
+  PreferencesContextProvider,
   DragModeContextProvider,
   ModalsContextProvider,
 } from "~/context";
@@ -15,15 +16,17 @@ const App = (props: AppProps): React.ReactNode => {
 
   return (
     <ThemeProvider>
-      <AppContextProvider>
-        <DragModeContextProvider>
-          <AppView>
-            <ModalsContextProvider>
-              <Component {...pageProps} />
-            </ModalsContextProvider>
-          </AppView>
-        </DragModeContextProvider>
-      </AppContextProvider>
+      <PreferencesContextProvider>
+        <AppContextProvider>
+          <DragModeContextProvider>
+            <AppView>
+              <ModalsContextProvider>
+                <Component {...pageProps} />
+              </ModalsContextProvider>
+            </AppView>
+          </DragModeContextProvider>
+        </AppContextProvider>
+      </PreferencesContextProvider>
     </ThemeProvider>
   );
 };

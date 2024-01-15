@@ -9,7 +9,7 @@ import {
   DraggableItemContext,
 } from "~/components";
 import { removeItemFrom, replaceItemIn } from "~/utils";
-import { DragModeContext, ModalsContext } from "~/context";
+import { DragModeContext, ModalsContext, PrefsContext } from "~/context";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -37,6 +37,7 @@ const GroupBase: React.FC<GroupProps> = ({
   onClickEdit,
 }) => {
   const { setAddProductTarget } = useContext(ModalsContext);
+  const { prefs: { compactView = false } = {} } = useContext(PrefsContext);
   const { dragEnabled, isDragging } = useContext(DragModeContext);
   const { isTarget } = useContext(DraggableBinContext);
   const { isActive } = useContext(DraggableItemContext);
@@ -102,12 +103,14 @@ const GroupBase: React.FC<GroupProps> = ({
       sx={{
         borderLeftColor: "transparent",
       }}
+      size={compactView ? "md" : undefined}
       actions={
         dragEnabled
           ? []
           : [
               <IconButton
                 key="add"
+                size={compactView ? "small" : undefined}
                 onClick={() =>
                   setAddProductTarget({
                     target: undefined,
@@ -117,17 +120,25 @@ const GroupBase: React.FC<GroupProps> = ({
               >
                 <AddIcon />
               </IconButton>,
-              <IconButton key="edit" onClick={() => onClickEdit(group)}>
+              <IconButton
+                key="edit"
+                size={compactView ? "small" : undefined}
+                onClick={() => onClickEdit(group)}
+              >
                 <EditIcon />
               </IconButton>,
-              <IconButton key="delete" onClick={() => onClickRemove(group)}>
+              <IconButton
+                key="delete"
+                size={compactView ? "small" : undefined}
+                onClick={() => onClickRemove(group)}
+              >
                 <DeleteIcon />
               </IconButton>,
             ]
       }
     >
-      <Box pl={24}>
-        <Draggable.List spacing={4}>
+      <Box pl={compactView ? 18 : 24}>
+        <Draggable.List spacing={compactView ? 2 : 4}>
           {group.products.map((product, index) => (
             <ProductView
               key={product.name}
@@ -144,7 +155,7 @@ const GroupBase: React.FC<GroupProps> = ({
             direction="column"
             alignItems="center"
             justifyContent="center"
-            p={12}
+            p={compactView ? 8 : 12}
             spacing={2}
           >
             <Typography variant="body2">No products for this group</Typography>

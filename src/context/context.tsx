@@ -7,7 +7,7 @@ import type { WithChildren, ProductGroup } from "~/utils";
 
 //================================================
 
-const LOCAL_STORAGE_KEY = "price-checker-data";
+const DATA_LOCAL_STORAGE_KEY = "price-checker-data";
 
 export interface AppContext {
   groups: ProductGroup[] | undefined;
@@ -25,7 +25,7 @@ export const AppContext = createContext<AppContext>({
 
 const AppContextProviderComponent: React.FC<WithChildren> = ({ children }) => {
   const [groups, setGroups] = useLocalStorage<ProductGroup[]>(
-    LOCAL_STORAGE_KEY,
+    DATA_LOCAL_STORAGE_KEY,
     [],
   );
 

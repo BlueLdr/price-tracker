@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useContext, useEffect } from "react";
 
 import { applyListingUpdates } from "~/utils";
-import { AppContext } from "~/context";
+import { AppContext, PrefsContext } from "~/context";
 
 import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
@@ -23,6 +23,12 @@ const Icon = styled.img`
 `;
 Icon.displayName = "styled(Icon)";
 
+const CompactIcon = styled.img`
+  width: ${({ theme }) => theme.spacing(4)};
+  height: ${({ theme }) => theme.spacing(4)};
+`;
+CompactIcon.displayName = "styled(CompactIcon)";
+
 const contentStyle: StyleProps = {
   display: "flex",
   justifyContent: "space-between",
@@ -38,16 +44,23 @@ export interface ListingProps {
 }
 
 export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
+  const { prefs: { compactView = false } = {} } = useContext(PrefsContext);
   const { scrapeScheduler } = useContext(AppContext);
   useEffect(() => {
+    let cancelled = false;
     const promise = scrapeScheduler
       ?.enqueueRequest(listing.url, listing.dateUpdated)
-      ?.then(async newListing =>
-        updateListing(listing.url, oldListing =>
-          newListing ? applyListingUpdates(newListing, oldListing) : oldListing,
-        ),
-      );
+      ?.then(async newListing => {
+        if (!cancelled) {
+          updateListing(listing.url, oldListing =>
+            newListing
+              ? applyListingUpdates(newListing, oldListing)
+              : oldListing,
+          );
+        }
+      });
     return () => {
+      cancelled = true;
       promise?.catch(err =>
         err === "Cancelled" ? undefined : Promise.reject(err),
       );
@@ -57,11 +70,35 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
   }, [listing.dateUpdated, updateListing]);
 
   return (
-    <ListItem>
-      <ListItemIcon>
-        <Icon src={listing.siteIconUrl} />
+    <ListItem
+      sx={
+        compactView
+          ? {
+              paddingTop: theme => theme.spacing(0.5),
+              paddingBottom: theme => theme.spacing(0.5),
+            }
+          : undefined
+      }
+    >
+      <ListItemIcon
+        sx={
+          compactView
+            ? { minWidth: "0", marginRight: theme => theme.spacing(4) }
+            : undefined
+        }
+      >
+        {compactView ? (
+          <CompactIcon src={listing.siteIconUrl} />
+        ) : (
+          <Icon src={listing.siteIconUrl} />
+        )}
       </ListItemIcon>
-      <ListItemText primaryTypographyProps={{ sx: contentStyle }}>
+      <ListItemText
+        primaryTypographyProps={{
+          sx: contentStyle,
+          variant: compactView ? "body2" : "body1",
+        }}
+      >
         <Link href={listing.url} target="_blank" sx={{ flex: "0 0 auto" }}>
           {listing.siteName || listing.url}
         </Link>
@@ -72,6 +109,7 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
           flex="0 1 auto"
         >
           <Typography
+            variant={compactView ? "body2" : "body1"}
             color={
               listing.currentPrice !== listing.originalPrice &&
               listing.currentPrice === listing.lowestPrice
@@ -89,7 +127,16 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
           >
             <Typography
               component="span"
-              color="success"
+              variant={compactView ? "body2" : "body1"}
+              color={
+                (listing.currentPrice ?? Infinity) <
+                (listing.originalPrice ?? 0)
+                  ? (listing.currentPrice ?? Infinity) <=
+                    (listing.lowestPrice ?? 0)
+                    ? "success.main"
+                    : "success.dark"
+                  : undefined
+              }
               flex="0 0 4.5rem"
               textAlign="right"
             >
