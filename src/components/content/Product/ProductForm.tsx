@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 
+import { DragModeContextProvider } from "~/context";
 import {
   removeItemFrom,
   scrapeUrl,
   useApiRequest,
   useStateObject,
 } from "~/utils";
+import { Draggable } from "~/components";
 
 import Autocomplete from "@mui/material/Autocomplete";
+import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
@@ -47,6 +50,14 @@ const Icon = styled.img`
 `;
 Icon.displayName = "styled(Icon)";
 
+const listItemIconStyle: StyleProps = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginRight: theme => theme.spacing(3),
+  gap: theme => theme.spacing(1),
+};
+
 const listItemActionsStyle: StyleProps = {
   display: "flex",
   justifyContent: "flex-end",
@@ -83,6 +94,44 @@ const scrapeApiRequest = (...args: Parameters<typeof scrapeUrl>) =>
 
 //================================================
 
+interface FormListingProps {
+  index: number;
+  data: ProductListing | ParsedPageListing;
+  onDeleteListing: (listing: ProductListing | ParsedPageListing) => void;
+}
+
+const FormListing: React.FC<FormListingProps> = ({
+  index,
+  data: listing,
+  onDeleteListing,
+}) => (
+  <ListItem component="div" key={index} disablePadding>
+    <ListItemIcon sx={listItemIconStyle}>
+      <Draggable.Handle sx={{ padding: theme => theme.spacing(1) }} />
+      <Icon src={listing.siteIconUrl} />
+    </ListItemIcon>
+    <ListItemText>
+      <Link href={listing.url} target="_blank">
+        {listing.siteName || listing.url}
+      </Link>
+      <ListItemSecondaryAction sx={listItemActionsStyle}>
+        <Typography component="span" color="success">
+          ${listing.currentPrice}
+        </Typography>
+        <IconButton
+          disabled={!("timestamp" in listing)}
+          type="button"
+          onClick={() => onDeleteListing(listing)}
+        >
+          <DeleteIcon />
+        </IconButton>
+      </ListItemSecondaryAction>
+    </ListItemText>
+  </ListItem>
+);
+
+//================================================
+
 export interface ProductFormProps {
   id: string;
   product: Partial<ProductWithUpdates>;
@@ -91,7 +140,7 @@ export interface ProductFormProps {
 }
 
 export type ProductFormData = Omit<Product, "listings"> & {
-  listings: (ProductListing & ParsedPageListing)[];
+  listings: (ProductListing | ParsedPageListing)[];
 };
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -137,6 +186,16 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       .catch(err => setNewListingError(err));
   };
 
+  const onReorderListings = (
+    transform: (
+      listing: ProductFormData["listings"],
+    ) => ProductFormData["listings"],
+  ) =>
+    setFormData(data => ({
+      ...data,
+      listings: transform(data.listings ?? []),
+    }));
+
   const nameOptions = (formData?.listings
     ?.map(l => l.productName)
     .filter(s => !!s) ?? []) as string[];
@@ -145,103 +204,100 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     listing => !!listing.imageUrl,
   );
 
-  return (
-    <form id={id} onSubmit={onSubmit}>
-      <Autocomplete<string, false, false, true>
-        autoFocus
-        sx={{ marginY: theme => theme.spacing(2) }}
-        fullWidth
-        renderInput={props => <TextField name="name" label="Name" {...props} />}
-        options={nameOptions}
-        freeSolo
-        value={formData.name}
-        onChange={(_, newValue) => setFormData({ name: newValue || "" })}
-      />
+  const onDeleteListing = (listing: ProductListing | ParsedPageListing) =>
+    formData.listings
+      ? setFormData({
+          imageUrl:
+            formData.imageUrl === listing.imageUrl
+              ? undefined
+              : formData.imageUrl,
+          listings: removeItemFrom(
+            formData.listings,
+            i => i.url === listing.url,
+          ),
+        })
+      : undefined;
 
-      <List>
-        {formData.listings?.map((listing, index) => (
-          <ListItem key={index}>
-            <ListItemIcon>
-              <Icon src={listing.siteIconUrl} />
-            </ListItemIcon>
-            <ListItemText>
-              <Link href={listing.url} target="_blank">
-                {listing.siteName || listing.url}
-              </Link>
-              <ListItemSecondaryAction sx={listItemActionsStyle}>
-                <Typography component="span" color="success">
-                  ${listing.currentPrice}
-                </Typography>
-                <IconButton
-                  disabled={!("timestamp" in listing)}
-                  type="button"
-                  onClick={() =>
-                    formData.listings
-                      ? setFormData({
-                          imageUrl:
-                            formData.imageUrl === listing.imageUrl
-                              ? undefined
-                              : formData.imageUrl,
-                          listings: removeItemFrom(
-                            formData.listings,
-                            i => i.url === listing.url,
-                          ),
-                        })
-                      : undefined
+  return (
+    <DragModeContextProvider enabled>
+      <Box
+        component="form"
+        id={id}
+        onSubmit={onSubmit}
+        sx={{ overflowX: "hidden", overflowY: "auto" }}
+      >
+        <Autocomplete<string, false, false, true>
+          autoFocus
+          sx={{ marginY: theme => theme.spacing(2) }}
+          fullWidth
+          renderInput={props => (
+            <TextField name="name" label="Name" {...props} />
+          )}
+          options={nameOptions}
+          freeSolo
+          value={formData.name}
+          onChange={(_, newValue) => setFormData({ name: newValue || "" })}
+        />
+
+        <Draggable.Bin updateList={onReorderListings}>
+          <Draggable.List spacing={4} fullWidth muiList>
+            {(formData.listings ?? []).map((listing, index) => (
+              <FormListing
+                index={index}
+                data={listing}
+                onDeleteListing={onDeleteListing}
+              />
+            ))}
+          </Draggable.List>
+          <List>
+            <ListItem key={formData.listings?.length}>
+              <ListItemIcon sx={listItemIconStyle} />
+              <TextField
+                name="url"
+                label="Add a URL"
+                value={newListingUrl}
+                onChange={e => setNewListingUrl(e.currentTarget.value)}
+                disabled={status.pending}
+                error={!!newListingUrl && !!newListingError}
+                helperText={newListingError}
+                fullWidth
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    onAddListing();
                   }
+                }}
+              />
+              <ListItemSecondaryAction>
+                <IconButton
+                  disabled={!newListingUrl || status.pending}
+                  onClick={onAddListing}
+                  type="button"
                 >
-                  <DeleteIcon />
+                  <AddIcon />
                 </IconButton>
               </ListItemSecondaryAction>
-            </ListItemText>
-          </ListItem>
-        ))}
-        <ListItem key={formData.listings?.length}>
-          <ListItemIcon />
-          <TextField
-            name="url"
-            label="Add a URL"
-            value={newListingUrl}
-            onChange={e => setNewListingUrl(e.currentTarget.value)}
-            disabled={status.pending}
-            error={!!newListingUrl && !!newListingError}
-            helperText={newListingError}
-            fullWidth
-            onKeyDown={e => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                onAddListing();
-              }
-            }}
-          />
-          <ListItemSecondaryAction>
-            <IconButton
-              disabled={!newListingUrl || status.pending}
-              onClick={onAddListing}
-              type="button"
-            >
-              <AddIcon />
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
-      </List>
+            </ListItem>
+          </List>
+        </Draggable.Bin>
 
-      <ImageList cols={3} rowHeight={180}>
-        {!!imageOptions?.length ? (
-          imageOptions.map(listing => (
-            <ImageListItem
-              key={listing.imageUrl}
-              data-selected={formData.imageUrl === listing.imageUrl}
-              onClick={() => setFormData({ imageUrl: listing.imageUrl })}
-              sx={imageStyle}
-            >
-              <Image src={listing.imageUrl} loading="lazy" />
-            </ImageListItem>
-          ))
-        ) : (
-          <ImageListItem>No images found</ImageListItem>
-        )}
-      </ImageList>
-    </form>
+        <ImageList cols={3} rowHeight={180}>
+          {!!imageOptions?.length ? (
+            imageOptions.map(listing => (
+              <ImageListItem
+                key={listing.imageUrl}
+                data-selected={formData.imageUrl === listing.imageUrl}
+                onClick={() => setFormData({ imageUrl: listing.imageUrl })}
+                sx={imageStyle}
+              >
+                <Image src={listing.imageUrl} loading="lazy" />
+              </ImageListItem>
+            ))
+          ) : (
+            <ImageListItem>No images found</ImageListItem>
+          )}
+        </ImageList>
+      </Box>
+    </DragModeContextProvider>
   );
 };

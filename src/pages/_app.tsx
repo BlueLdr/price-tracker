@@ -1,5 +1,9 @@
 import { AppView } from "~/components";
-import { AppContextProvider, ModalsContextProvider } from "~/context";
+import {
+  AppContextProvider,
+  DragModeContextProvider,
+  ModalsContextProvider,
+} from "~/context";
 import { ThemeProvider } from "~/theme";
 
 import type { AppProps } from "next/app";
@@ -12,11 +16,13 @@ const App = (props: AppProps): React.ReactNode => {
   return (
     <ThemeProvider>
       <AppContextProvider>
-        <AppView>
-          <ModalsContextProvider>
-            <Component {...pageProps} />
-          </ModalsContextProvider>
-        </AppView>
+        <DragModeContextProvider>
+          <AppView>
+            <ModalsContextProvider>
+              <Component {...pageProps} />
+            </ModalsContextProvider>
+          </AppView>
+        </DragModeContextProvider>
       </AppContextProvider>
     </ThemeProvider>
   );

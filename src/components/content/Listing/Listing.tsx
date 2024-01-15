@@ -54,7 +54,7 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
       scrapeScheduler?.cancelRequest(listing.url);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listing.dateUpdated]);
+  }, [listing.dateUpdated, updateListing]);
 
   return (
     <ListItem>
@@ -79,7 +79,7 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
                 : "grey.300"
             }
           >
-            Lowest Price: ${listing.lowestPrice ?? " --.--"}
+            Lowest Price: ${listing.lowestPrice?.toFixed(2) ?? " --.--"}
           </Typography>
           <Tooltip
             title={`Last updated: ${new Date(
@@ -93,7 +93,7 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
               flex="0 0 4.5rem"
               textAlign="right"
             >
-              ${listing.currentPrice ?? " --.--"}
+              ${listing.currentPrice?.toFixed(2) ?? " --.--"}
             </Typography>
           </Tooltip>
         </Grid>

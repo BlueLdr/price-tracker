@@ -1,6 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import useSWR, { mutate } from "swr";
 
+import type React from "react";
+
 //================================================
 
 export const useValueRef = <T>(value: T) => {
@@ -58,6 +60,7 @@ export const useLocalStorage = <T extends object | number | string>(
       }
       localStorage.setItem(key, JSON.stringify(newValue));
       mutate(key, newValue);
+      valueRef.current = newValue;
     },
     [key, valueRef],
   );

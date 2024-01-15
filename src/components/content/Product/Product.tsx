@@ -1,9 +1,9 @@
 import { useCallback, useContext } from "react";
 import styled from "@emotion/styled";
 
-import { Disclosure, Listing, SpacedGrid } from "~/components";
+import { Disclosure, Draggable, Listing, SpacedGrid } from "~/components";
 import { applyProductUpdates, removeItemFrom, replaceItemIn } from "~/utils";
-import { ModalsContext } from "~/context";
+import { DragModeContext, ModalsContext } from "~/context";
 
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -28,18 +28,20 @@ Image.displayName = "styled(Image)";
 //================================================
 
 export interface ProductProps {
-  product: Product;
+  data: Product;
   updateProduct: Updater<Product, "name">;
   removeProduct: (id: Product["name"]) => void;
+  index: number;
 }
 
 export const ProductView: React.FC<ProductProps> = ({
-  product,
+  data: product,
   updateProduct,
   removeProduct,
 }) => {
   const { setDeleteProductTarget, setEditProductTarget, setAddListingTarget } =
     useContext(ModalsContext);
+  const { dragEnabled } = useContext(DragModeContext);
 
   const updateListing = useCallback<Updater<ProductListing, "url">>(
     (id, newListing) => {
@@ -91,38 +93,52 @@ export const ProductView: React.FC<ProductProps> = ({
 
   return (
     <Disclosure
+      headerIcon={dragEnabled ? <Draggable.Handle /> : undefined}
       header={product.name}
-      open={product.open || false}
-      setOpen={setOpen}
+      open={!!product.open && !dragEnabled}
+      setOpen={dragEnabled ? () => {} : setOpen}
       sx={{
         borderLeftColor: "transparent",
       }}
-      actions={[
-        <IconButton
-          key="add"
-          onClick={() =>
-            setAddListingTarget({ target: undefined, onSave: updateListing })
-          }
-        >
-          <AddIcon />
-        </IconButton>,
-        <IconButton
-          key="edit"
-          onClick={() =>
-            setEditProductTarget({ target: product, onSave: updateProduct })
-          }
-        >
-          <EditIcon />
-        </IconButton>,
-        <IconButton
-          key="delete"
-          onClick={() =>
-            setDeleteProductTarget({ target: product, onSave: removeProduct })
-          }
-        >
-          <DeleteIcon />
-        </IconButton>,
-      ]}
+      actions={
+        dragEnabled
+          ? []
+          : [
+              <IconButton
+                key="add"
+                onClick={() =>
+                  setAddListingTarget({
+                    target: undefined,
+                    onSave: updateListing,
+                  })
+                }
+              >
+                <AddIcon />
+              </IconButton>,
+              <IconButton
+                key="edit"
+                onClick={() =>
+                  setEditProductTarget({
+                    target: product,
+                    onSave: updateProduct,
+                  })
+                }
+              >
+                <EditIcon />
+              </IconButton>,
+              <IconButton
+                key="delete"
+                onClick={() =>
+                  setDeleteProductTarget({
+                    target: product,
+                    onSave: removeProduct,
+                  })
+                }
+              >
+                <DeleteIcon />
+              </IconButton>,
+            ]
+      }
     >
       <Grid container alignItems="center" flexWrap="nowrap">
         {product.imageUrl && <Image src={product.imageUrl} />}

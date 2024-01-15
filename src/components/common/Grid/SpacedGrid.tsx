@@ -49,7 +49,7 @@ const disableYSpacingStyle: StyleProps = {
  * Wraps each of its children in a <Grid item> element, and renders them inside
  * a <Grid container> element. All props are passed to the <Grid container>
  */
-const SpacedGrid: React.ForwardRefRenderFunction<
+const SpacedGridRoot: React.ForwardRefRenderFunction<
   HTMLDivElement,
   SpacedGridProps
 > = ((
@@ -81,6 +81,8 @@ const SpacedGrid: React.ForwardRefRenderFunction<
 }) as <C extends React.ElementType>(
   props: GridProps<C, { component?: C }>,
 ) => React.ReactElement | null;
+
+const SpacedGrid = forwardRef(SpacedGridRoot);
 SpacedGrid.displayName = "SpacedGrid";
 
-export default forwardRef(SpacedGrid);
+export default SpacedGrid;

@@ -30,9 +30,9 @@ module.exports = {
   env: { browser: true, es2020: true },
   extends: [
     // "react-app",
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react-hooks/recommended',
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended",
   ],
   ignorePatterns: [
     "dist/**/*",
@@ -40,7 +40,7 @@ module.exports = {
     "**/*.html",
     "**/*.min.js",
     "**/vite.config.ts",
-    '.eslintrc.cjs'
+    ".eslintrc.cjs",
   ],
   settings: {
     "import/parsers": {
@@ -54,74 +54,73 @@ module.exports = {
     "import/internal-regex":
       "^~/((api)|(app)|(assets)|(theme)|(context)|(routing)|(components)|(utils))",
   },
-  parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh', "@typescript-eslint", "import"],
+  parser: "@typescript-eslint/parser",
+  plugins: ["react-refresh", "@typescript-eslint", "import"],
   reportUnusedDisableDirectives: true,
   rules: {
-    'react-refresh/only-export-components': [
-      'warn',
+    "react-refresh/only-export-components": [
+      "warn",
       { allowConstantExport: true },
     ],
 
-  "@typescript-eslint/no-explicit-any": "off",
-  "no-extra-boolean-cast": "off",
-  "@typescript-eslint/no-empty-function": "off",
-  "@typescript-eslint/no-non-null-assertion": "off",
-  "@typescript-eslint/consistent-type-imports": "error",
-  // "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
-  "import/no-anonymous-default-export": "off",
-  "import/no-unresolved": "error",
-  "import/no-duplicates": "error",
-  "import/no-internal-modules": [
-  "error",
-  {
-    forbid: [
-      "@mui/*/*/**",
-      "~/components/**/*",
-      "~/components/!(routes)",
-      "~/utils/*/**",
-      "~/theme/**",
-      "~/app/**",
-      "~/api/**",
-      "~/context/**",
-      "~/routing/**",
-      "~/assets/**",
-      "./*/**",
-      "../*/**",
-      "../../*/**",
-      "../../../*/**",
-      "../../../../*/**",
+    "@typescript-eslint/no-explicit-any": "off",
+    "no-extra-boolean-cast": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
+    // "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "import/no-anonymous-default-export": "off",
+    "import/no-unresolved": "error",
+    "import/no-duplicates": "error",
+    "import/no-internal-modules": [
+      "error",
+      {
+        forbid: [
+          "@mui/*/*/**",
+          "~/components/**/*",
+          "~/components/!(routes)",
+          "~/utils/*/**",
+          "~/theme/**",
+          "~/app/**",
+          "~/api/**",
+          "~/context/**",
+          "~/routing/**",
+          "~/assets/**",
+          "./*/**",
+          "../*/**",
+          "../../*/**",
+          "../../../*/**",
+          "../../../../*/**",
+        ],
+      },
+    ],
+    "import/order": [
+      "warn",
+      {
+        "newlines-between": "always",
+        groups: [
+          ["builtin", "external"],
+          ["internal", "parent", "sibling", "index", "object"],
+          "unknown",
+          "type",
+        ],
+        pathGroups: [
+          ...muiExternalImportsOrder.map(pattern => ({
+            pattern,
+            group: "external",
+          })),
+          ...internalImportsOrder.map(pattern => ({
+            pattern,
+            group: "internal",
+          })),
+          ...muiComponentImportsOrder.map(pattern => ({
+            pattern,
+            group: "unknown",
+          })),
+        ],
+        distinctGroup: false,
+        pathGroupsExcludedImportTypes: ["type"],
+      },
     ],
   },
-],
-  "import/order": [
-  "warn",
-  {
-    "newlines-between": "always",
-    groups: [
-      ["builtin", "external"],
-      ["internal", "parent", "sibling", "index", "object"],
-      "unknown",
-      "type",
-    ],
-    pathGroups: [
-      ...muiExternalImportsOrder.map(pattern => ({
-        pattern,
-        group: "external",
-      })),
-      ...internalImportsOrder.map(pattern => ({
-        pattern,
-        group: "internal",
-      })),
-      ...muiComponentImportsOrder.map(pattern => ({
-        pattern,
-        group: "unknown",
-      })),
-    ],
-    distinctGroup: false,
-    pathGroupsExcludedImportTypes: ["type"],
-  },
-],
-
-  },
-}
+};

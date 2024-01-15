@@ -77,6 +77,7 @@ export const awaitTimeout = <T>(
 export type ArrayInsertPosSpecifier<T> =
   | "start"
   | "end"
+  | number
   | ((a: T, b: T) => -1 | 0 | 1);
 
 // helper functions to manipulate arrays without mutating the original copy
@@ -93,6 +94,9 @@ export const addItemTo = <T>(
   }
   if (list.length === 0) {
     return [item];
+  }
+  if (typeof pos === "number") {
+    return [...list.slice(0, pos), item, ...list.slice(pos)];
   }
   if (typeof pos === "function") {
     let index = -1;

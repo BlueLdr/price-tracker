@@ -1,6 +1,12 @@
 import styled from "@emotion/styled";
+import { useContext } from "react";
 
-import { IFRAME_CONTAINER_ID } from "~/utils/constants";
+import { SiteHeader } from "~/components";
+import { DragModeContext } from "~/context";
+import {
+  DRAGGED_ITEM_CONTAINER_ID,
+  IFRAME_CONTAINER_ID,
+} from "~/utils/constants";
 
 import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -39,6 +45,19 @@ const iframeContainerStyle: StyleProps = {
   overflow: "hidden",
 };
 
+const draggedItemContainerStyle: StyleProps = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100vh",
+  height: "100vh",
+  zIndex: 9999,
+  pointerEvents: "none",
+  "&:empty": {
+    display: "none",
+  },
+};
+
 //================================================
 
 export const AppView: React.FC<{ children?: React.ReactNode }> = ({
@@ -46,11 +65,26 @@ export const AppView: React.FC<{ children?: React.ReactNode }> = ({
 }) => (
   <>
     <CssBaseline />
-    <Box display="flex" flexDirection="column" minHeight="100vh">
+    <Box
+      display="flex"
+      flexDirection="column"
+      minHeight="100vh"
+      sx={
+        useContext(DragModeContext).isDragging
+          ? {
+              cursor: "grabbing !important",
+              overflowX: "hidden",
+              overflowY: "visible",
+            }
+          : undefined
+      }
+    >
       <SiteContainer flexGrow={1}>
+        <SiteHeader />
         <Body>{children}</Body>
       </SiteContainer>
       <Box id={IFRAME_CONTAINER_ID} sx={iframeContainerStyle} />
+      <Box id={DRAGGED_ITEM_CONTAINER_ID} sx={draggedItemContainerStyle} />
     </Box>
   </>
 );

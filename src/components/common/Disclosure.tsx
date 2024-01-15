@@ -1,12 +1,18 @@
+import { useContext } from "react";
+
+import { DraggableItemContext } from "~/components";
+
 import Accordion from "@mui/material/Accordion";
 import AccordionActions from "@mui/material/AccordionActions";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-import type { Paper, AccordionProps } from "@mui/material";
 import type { StyleProps } from "~/theme";
 import type { ValueAndSetter, WithChildren } from "~/utils";
+import type Paper from "@mui/material/Paper";
+import type { AccordionProps } from "@mui/material/Accordion";
 
 const summaryStyle: StyleProps = {
   background: theme => theme.palette.grey[200],
@@ -53,28 +59,37 @@ export type DisclosureProps<
     "expanded" | "defaultExpanded" | "onChange" | "children"
   > &
   WithChildren & {
+    headerIcon?: React.ReactNode;
     header: React.ReactNode;
     actions?: React.ReactNode;
+    closeWhenDragged?: boolean;
   };
 
 export const Disclosure: React.FC<DisclosureProps> = ({
   header,
+  headerIcon,
   children,
   open,
   setOpen,
   actions,
+  closeWhenDragged,
   ...props
 }) => {
+  const { isActive } = useContext(DraggableItemContext);
+  const forceClose = isActive && closeWhenDragged;
   return (
     <Accordion
       variant="outlined"
-      expanded={open}
-      onChange={(_, newOpen) => setOpen(newOpen)}
+      expanded={!forceClose && open}
+      onChange={(_, newOpen) => (forceClose ? undefined : setOpen(newOpen))}
       sx={{ borderRadius: theme => theme.spacing(2) }}
       {...props}
     >
       <AccordionSummary sx={summaryStyle}>
-        <Typography>{header}</Typography>
+        <Box display="flex" alignItems="center">
+          {headerIcon && <Box ml={-4}>{headerIcon}</Box>}
+          <Typography>{header}</Typography>
+        </Box>
         {actions && (
           <AccordionActions
             sx={actionsStyle}

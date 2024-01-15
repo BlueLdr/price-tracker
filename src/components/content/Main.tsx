@@ -1,16 +1,17 @@
 import { useCallback, useState } from "react";
 
 import {
-  SpacedGrid,
   Group,
   DeleteProductModal,
   AddProductModal,
   EditProductModal,
   EditGroupModal,
+  Draggable,
 } from "~/components";
 import { removeItemFrom, replaceItemIn } from "~/utils";
 import { AddGroupModal, DeleteGroupModal } from "./Group";
 import { ImportModal } from "./Import";
+import { SchedulerManager } from "./SchedulerManager";
 
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
@@ -41,6 +42,7 @@ export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
     },
     [setGroups],
   );
+
   const removeGroup = useCallback(
     (id: ProductGroup["name"]) => {
       setGroups(curGroups =>
@@ -55,24 +57,27 @@ export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
 
   return (
     <>
-      <Grid mx="auto" maxWidth={1080} container>
-        <SpacedGrid direction="column" spacing={6} p={8}>
-          {groups.map(group => (
-            <Group
-              key={group.name}
-              group={group}
-              updateGroup={updateGroup}
-              onClickRemove={setDeleteTarget}
-              onClickEdit={setEditTarget}
-            />
-          ))}
+      {/*<DragPlayground />*/}
+      <Draggable.Bin updateList={setGroups}>
+        <Grid mx="auto" maxWidth={1080} width="100%" container p={8}>
+          <Draggable.List spacing={6} fullWidth>
+            {groups.map(group => (
+              <Group
+                key={group.name}
+                data={group}
+                updateGroup={updateGroup}
+                onClickRemove={setDeleteTarget}
+                onClickEdit={setEditTarget}
+              />
+            ))}
+          </Draggable.List>
           {!groups.length && (
             <Grid container alignItems="center" justifyContent="center" py={12}>
               <Button startIcon={<AddIcon />}>Create Group</Button>
             </Grid>
           )}
-        </SpacedGrid>
-      </Grid>
+        </Grid>
+      </Draggable.Bin>
 
       <AddGroupModal updateGroup={updateGroup} />
       <EditGroupModal
@@ -90,6 +95,7 @@ export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
       <DeleteProductModal />
       <EditProductModal />
       <ImportModal />
+      <SchedulerManager />
     </>
   );
 };

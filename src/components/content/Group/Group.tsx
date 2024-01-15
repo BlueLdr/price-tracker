@@ -1,9 +1,17 @@
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 
-import { Disclosure, SpacedGrid, ProductView } from "~/components";
+import {
+  Disclosure,
+  SpacedGrid,
+  ProductView,
+  Draggable,
+  DraggableBinContext,
+  DraggableItemContext,
+} from "~/components";
 import { removeItemFrom, replaceItemIn } from "~/utils";
-import { ModalsContext } from "~/context";
+import { DragModeContext, ModalsContext } from "~/context";
 
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -15,20 +23,23 @@ import type { Product, ProductGroup, Updater } from "~/utils";
 
 //================================================
 
-export interface GroupProps {
-  group: ProductGroup;
+interface GroupProps {
+  data: ProductGroup;
   updateGroup: Updater<ProductGroup, "name">;
   onClickRemove: (group: ProductGroup) => void;
   onClickEdit: (group: ProductGroup) => void;
 }
 
-export const Group: React.FC<GroupProps> = ({
-  group,
+const GroupBase: React.FC<GroupProps> = ({
+  data: group,
   updateGroup,
   onClickRemove,
   onClickEdit,
 }) => {
   const { setAddProductTarget } = useContext(ModalsContext);
+  const { dragEnabled, isDragging } = useContext(DragModeContext);
+  const { isTarget } = useContext(DraggableBinContext);
+  const { isActive } = useContext(DraggableItemContext);
 
   const updateProduct = useCallback<Updater<Product, "name">>(
     (id, newProduct) => {
@@ -63,41 +74,71 @@ export const Group: React.FC<GroupProps> = ({
     [group.name, updateGroup],
   );
 
+  const [forceOpen, setForceOpen] = useState(false);
+  const [disableOpenOnClick, setDisableOpenOnClick] = useState(false);
+
+  useEffect(() => {
+    if (isDragging && isTarget) {
+      const timer = setTimeout(() => {
+        setForceOpen(true);
+      }, 600);
+      return () => {
+        clearTimeout(timer);
+        setForceOpen(false);
+      };
+    }
+  }, [isTarget, isDragging]);
+
+  useEffect(() => {
+    setDisableOpenOnClick(isActive);
+  }, [isActive]);
+
   return (
     <Disclosure
+      headerIcon={dragEnabled ? <Draggable.Handle /> : undefined}
       header={group.name}
-      open={group.open || false}
-      setOpen={setOpen}
+      open={isActive ? false : forceOpen || !!group.open}
+      setOpen={disableOpenOnClick ? () => {} : setOpen}
       sx={{
         borderLeftColor: "transparent",
       }}
-      actions={[
-        <IconButton
-          key="add"
-          onClick={() =>
-            setAddProductTarget({ target: undefined, onSave: updateProduct })
-          }
-        >
-          <AddIcon />
-        </IconButton>,
-        <IconButton key="edit" onClick={() => onClickEdit(group)}>
-          <EditIcon />
-        </IconButton>,
-        <IconButton key="delete" onClick={() => onClickRemove(group)}>
-          <DeleteIcon />
-        </IconButton>,
-      ]}
+      actions={
+        dragEnabled
+          ? []
+          : [
+              <IconButton
+                key="add"
+                onClick={() =>
+                  setAddProductTarget({
+                    target: undefined,
+                    onSave: updateProduct,
+                  })
+                }
+              >
+                <AddIcon />
+              </IconButton>,
+              <IconButton key="edit" onClick={() => onClickEdit(group)}>
+                <EditIcon />
+              </IconButton>,
+              <IconButton key="delete" onClick={() => onClickRemove(group)}>
+                <DeleteIcon />
+              </IconButton>,
+            ]
+      }
     >
-      <SpacedGrid direction="column" spacing={4} pl={24}>
-        {group.products.map(product => (
-          <ProductView
-            key={product.name}
-            product={product}
-            updateProduct={updateProduct}
-            removeProduct={removeProduct}
-          />
-        ))}
-        {group.products.length === 0 && (
+      <Box pl={24}>
+        <Draggable.List spacing={4}>
+          {group.products.map((product, index) => (
+            <ProductView
+              key={product.name}
+              data={product}
+              updateProduct={updateProduct}
+              removeProduct={removeProduct}
+              index={index}
+            />
+          ))}
+        </Draggable.List>
+        {group.products.length === 0 && !dragEnabled && (
           <SpacedGrid
             container
             direction="column"
@@ -121,7 +162,25 @@ export const Group: React.FC<GroupProps> = ({
             </Button>
           </SpacedGrid>
         )}
-      </SpacedGrid>
+      </Box>
     </Disclosure>
+  );
+};
+
+//================================================
+
+export const Group: React.FC<GroupProps> = ({ updateGroup, ...props }) => {
+  const updateList = useCallback(
+    (transform: (items: Product[]) => Product[]) =>
+      updateGroup(props.data.name, group => ({
+        ...group,
+        products: transform(group.products),
+      })),
+    [updateGroup, props.data.name],
+  );
+  return (
+    <Draggable.Bin updateList={updateList}>
+      <GroupBase {...props} updateGroup={updateGroup} />
+    </Draggable.Bin>
   );
 };

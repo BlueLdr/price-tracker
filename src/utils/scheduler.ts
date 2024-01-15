@@ -4,11 +4,12 @@ import type { ParsedPageListing } from "~/utils/types";
 
 //================================================
 
-const DEBUG = true;
+const DEBUG = false;
 
 const MINUTE = 1000 * 60; // 1 min
 const QUEUE_INTERVAL = 2000; // 2 s
 const POLL_INTERVAL = 10 * MINUTE;
+const TIMER_PAUSED = "PAUSED";
 
 const debugLog = (...args: any[]) =>
   DEBUG ? console.debug(...args) : undefined;
@@ -120,7 +121,7 @@ export class ScrapeScheduler {
   };
 
   stop = () => {
-    if (this.timer) {
+    if (this.timer && this.timer !== TIMER_PAUSED) {
       debugLog("Stopping scheduler...");
       clearInterval(this.timer);
       this.timer = null;
@@ -184,5 +185,15 @@ export class ScrapeScheduler {
       debugLog("Request not found; doing nothing.");
     }
     debugGroupEnd();
+  };
+
+  pause = () => {
+    this.stop();
+    this.timer = TIMER_PAUSED;
+  };
+
+  unpause = () => {
+    this.timer = null;
+    this.start();
   };
 }
