@@ -1,12 +1,6 @@
 // import deepmerge from "deepmerge";
 
-import type {
-  DeepStringDict,
-  EntryOf,
-  ParsedPageListing,
-  ProductListing,
-  PropsOfType,
-} from "~/utils";
+import type { DeepStringDict, EntryOf, PropsOfType } from "~/utils";
 
 //================================================
 
@@ -236,14 +230,3 @@ export const getObjKeyByValue = <R, V>(
     }[keyof R]
   // @ts-expect-error: type of key is `string` but we know it's a valid key
   | undefined => Object.entries(obj).find(([, val]) => val === value)?.[0];
-
-export const getMinPriceListing = (
-  listings: (ProductListing | ParsedPageListing)[],
-) =>
-  listings.reduce(
-    (min, item) =>
-      (min?.currentPrice ?? Infinity) > (item.currentPrice ?? Infinity)
-        ? item
-        : min,
-    undefined as ParsedPageListing | ProductListing | undefined,
-  );

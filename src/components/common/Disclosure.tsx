@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { DraggableItemContext } from "~/components";
+import { DraggableBinContext, DraggableItemContext } from "~/components";
 
 import Accordion from "@mui/material/Accordion";
 import AccordionActions from "@mui/material/AccordionActions";
@@ -20,13 +20,12 @@ type ComponentSize = "sm" | "md" | "lg";
 
 //================================================
 
-const summaryStyle = (size: ComponentSize): StyleProps => ({
-  background: theme => theme.palette.grey[200],
-  padding: theme =>
-    theme.spacing(
-      size === "sm" ? 2 : size === "md" ? 3 : 4,
-      size === "sm" ? 4 : 6,
-    ),
+const summaryStyle = (size: ComponentSize, isTarget: boolean): StyleProps => ({
+  background: theme => theme.palette.grey[isTarget ? 400 : 100],
+  borderLeft: theme => `1px solid ${theme.palette.grey[300]}`,
+  paddingY: theme => theme.spacing(size === "sm" ? 2 : size === "md" ? 3 : 4),
+  paddingLeft: theme => theme.spacing(size === "sm" ? 4 : 6),
+  paddingRight: theme => theme.spacing(size === "sm" ? 0 : 2),
   minHeight: size !== "lg" ? 0 : undefined,
   maxHeight: theme =>
     theme.spacing(size === "sm" ? 8 : size === "md" ? 10 : 12),
@@ -46,21 +45,23 @@ const detailsStyle = (size: ComponentSize): StyleProps => ({
   padding: theme => (size === "lg" ? theme.spacing(4) : theme.spacing(2, 4)),
 });
 
-const actionsStyle = (size: ComponentSize): StyleProps => ({
-  "& > *": {
+const actionsStyle: StyleProps = {
+  gap: theme => theme.spacing(2),
+  paddingRight: 0,
+  "& > .MuiIconButton-root": {
     transition: "opacity 100ms ease",
-    opacity: size !== "lg" ? 0 : 0.1,
+    opacity: 0.1,
     "&:hover, &:focus, &:focus-visible, &.Mui-focus, &.Mui-focusVisible": {
       opacity: 1,
     },
   },
-  ".MuiAccordionSummary-root:hover & > *": {
+  ".MuiAccordionSummary-root:hover & > .MuiIconButton-root": {
     opacity: 0.5,
     "&:hover, &:focus, &:focus-visible, &.Mui-focus, &.Mui-focusVisible": {
       opacity: 1,
     },
   },
-});
+};
 
 //================================================
 
@@ -91,7 +92,8 @@ export const Disclosure: React.FC<DisclosureProps> = ({
   sx,
   ...props
 }) => {
-  const { isActive } = useContext(DraggableItemContext);
+  const { isTarget, level: binLevel } = useContext(DraggableBinContext);
+  const { isActive, level } = useContext(DraggableItemContext);
   const forceClose = isActive && closeWhenDragged;
   return (
     <Accordion
@@ -101,22 +103,16 @@ export const Disclosure: React.FC<DisclosureProps> = ({
       sx={{ borderRadius: theme => theme.spacing(2), ...sx }}
       {...props}
     >
-      <AccordionSummary sx={summaryStyle(size)}>
+      <AccordionSummary sx={summaryStyle(size, isTarget && binLevel === level)}>
         <Box display="flex" alignItems="center">
           {headerIcon && <Box ml={-4}>{headerIcon}</Box>}
-          <Typography
-            sx={
-              size === "sm"
-                ? { fontSize: theme => theme.spacing(3.75) }
-                : undefined
-            }
-          >
+          <Typography variant={size === "sm" ? "body2" : undefined}>
             {header}
           </Typography>
         </Box>
         {actions && (
           <AccordionActions
-            sx={actionsStyle(size)}
+            sx={actionsStyle}
             onClick={e => e.stopPropagation()}
           >
             {actions}

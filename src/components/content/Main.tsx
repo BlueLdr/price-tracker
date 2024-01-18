@@ -1,5 +1,6 @@
 import { useCallback, useContext, useState } from "react";
 
+import { DragModeContext, PrefsContext } from "~/context";
 import {
   Group,
   DeleteProductModal,
@@ -8,7 +9,7 @@ import {
   EditGroupModal,
   Draggable,
 } from "~/components";
-import { removeItemFrom, replaceItemIn } from "~/utils";
+import { removeItemFrom, replaceItemIn, rgba } from "~/utils";
 import { AddGroupModal, DeleteGroupModal } from "./Group";
 import { ImportModal } from "./Import";
 import { SchedulerManager } from "./SchedulerManager";
@@ -18,7 +19,6 @@ import Grid from "@mui/material/Grid";
 import AddIcon from "@mui/icons-material/Add";
 
 import type { ProductGroup, Updater, WithStateHook } from "~/utils";
-import { PrefsContext } from "~/context";
 
 //================================================
 
@@ -27,6 +27,7 @@ export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
   setGroups,
 }) => {
   const { prefs: { compactView = false } = {} } = useContext(PrefsContext);
+  const { dragEnabled } = useContext(DragModeContext);
   const updateGroup = useCallback<Updater<ProductGroup, "name">>(
     (id, newGroup) => {
       setGroups(curGroups =>
@@ -68,6 +69,20 @@ export const Main: React.FC<WithStateHook<"groups", ProductGroup[]>> = ({
           container
           px={8}
           py={compactView ? 4 : 8}
+          sx={{
+            transition: theme =>
+              theme.transitions.create("box-shadow", { duration: "300ms" }),
+            boxShadow: theme =>
+              `0 0 6px ${rgba(theme.palette.primary.main, 0)}`,
+
+            ...(dragEnabled
+              ? {
+                  borderRadius: "6px",
+                  boxShadow: theme =>
+                    `0 0 6px ${rgba(theme.palette.primary.main, 1)}`,
+                }
+              : undefined),
+          }}
         >
           <Draggable.List spacing={compactView ? 4 : 6} fullWidth>
             {groups.map(group => (

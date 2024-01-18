@@ -1,11 +1,10 @@
-import { getMinPriceListing, parsePageData } from "~/utils";
+import { parsePageData } from "~/utils";
 import { IFRAME_CONTAINER_ID } from "~/utils/constants";
 
 import type {
   ParsedPageListing,
-  Product,
-  ProductListing,
-  ProductListingSnapshot,
+  ProductData,
+  ProductListingData,
   ProductWithUpdates,
 } from "~/utils";
 
@@ -86,30 +85,42 @@ export const scrapeUrl = async (
   });
 };
 
-export const createListingSnapshot = (
-  data: ProductListing,
-): ProductListingSnapshot => ({
-  url: data.url,
-  currentPrice: data.currentPrice,
-  dateUpdated: data.dateUpdated,
-});
-
 export const applyListingUpdates = (
   data: ParsedPageListing,
-  original?: ProductListing,
-): ProductListing => ({
-  url: data.url,
-  productName: data.productName ?? original?.productName,
-  imageUrl: data.imageUrl ?? original?.imageUrl,
-  siteName: data.siteName ?? original?.siteName,
-  siteIconUrl: data.siteIconUrl ?? original?.siteIconUrl,
-  currentPrice: data.currentPrice ?? original?.currentPrice,
-  originalPrice: original?.originalPrice ?? data.currentPrice,
-  lowestPrice: original?.lowestPrice ?? data.currentPrice,
-  dateAdded: original?.dateAdded ?? data.timestamp,
-  dateUpdated: data.timestamp,
-  history: original?.history ?? [],
-});
+  original?: ProductListingData,
+): ProductListingData => {
+  const history = original?.history?.slice() ?? [];
+  const updatedPrice = data.currentPrice;
+  const latestHistoryEntry = history[history.length - 1];
+  if (
+    !original ||
+    !history.length ||
+    updatedPrice !== latestHistoryEntry?.price
+  ) {
+    history.push({
+      price: updatedPrice,
+      dateAdded: data.timestamp,
+      dateUpdated: data.timestamp,
+    });
+  } else if (
+    updatedPrice != null &&
+    latestHistoryEntry.price === updatedPrice
+  ) {
+    history[history.length - 1] = {
+      ...latestHistoryEntry,
+      dateUpdated: data.timestamp,
+    };
+  }
+
+  return {
+    url: data.url,
+    productName: data.productName ?? original?.productName,
+    imageUrl: data.imageUrl ?? original?.imageUrl,
+    siteName: data.siteName ?? original?.siteName,
+    siteIconUrl: data.siteIconUrl ?? original?.siteIconUrl,
+    history,
+  };
+};
 
 export const createProductFromListing = (
   listing: ParsedPageListing,
@@ -121,24 +132,11 @@ export const createProductFromListing = (
 
 export const applyProductUpdates = (
   data: ProductWithUpdates,
-  original?: Product,
-): Product => {
-  const minListing = getMinPriceListing(data.listings || original?.listings);
-  const isNewLow =
-    minListing?.currentPrice ??
-    Infinity < (original?.lowestPrice?.currentPrice ?? Infinity);
+  original?: ProductData,
+): ProductData => {
   return {
     name: original?.name ? data.name || original?.name : data.name,
     imageUrl: data.imageUrl || original?.imageUrl,
-    currentPrice: minListing?.currentPrice,
-    lowestPrice:
-      minListing && isNewLow
-        ? createListingSnapshot(
-            "timestamp" in minListing
-              ? applyListingUpdates(minListing)
-              : minListing,
-          )
-        : original?.lowestPrice,
     listings: data.listings.map(listing =>
       "timestamp" in listing
         ? applyListingUpdates(

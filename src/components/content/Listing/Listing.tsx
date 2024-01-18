@@ -1,8 +1,14 @@
 import styled from "@emotion/styled";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo } from "react";
 
-import { applyListingUpdates } from "~/utils";
 import { AppContext, PrefsContext } from "~/context";
+import {
+  acknowledgeListingAlert,
+  applyListingUpdates,
+  formatPrice,
+  ProductListing,
+} from "~/utils";
+import { PriceAlertDot } from "~/components";
 
 import Grid from "@mui/material/Grid";
 import Link from "@mui/material/Link";
@@ -12,7 +18,7 @@ import ListItemText from "@mui/material/ListItemText";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 
-import type { ProductListing, Updater } from "~/utils";
+import type { ProductListingData, Updater } from "~/utils";
 import type { StyleProps } from "~/theme";
 
 //================================================
@@ -38,21 +44,23 @@ const contentStyle: StyleProps = {
 //================================================
 
 export interface ListingProps {
-  listing: ProductListing;
-  updateListing: Updater<ProductListing, "url">;
-  removeListing: (id: ProductListing["url"]) => void;
+  data: ProductListingData;
+  updateListing: Updater<ProductListingData, "url">;
+  removeListing: (id: ProductListingData["url"]) => void;
 }
 
-export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
+export const Listing: React.FC<ListingProps> = ({ data, updateListing }) => {
   const { prefs: { compactView = false } = {} } = useContext(PrefsContext);
   const { scrapeScheduler } = useContext(AppContext);
+  const listing = useMemo(() => new ProductListing(data), [data]);
+
   useEffect(() => {
     let cancelled = false;
     const promise = scrapeScheduler
-      ?.enqueueRequest(listing.url, listing.dateUpdated)
+      ?.enqueueRequest(data.url, listing.dateUpdated)
       ?.then(async newListing => {
         if (!cancelled) {
-          updateListing(listing.url, oldListing =>
+          updateListing(data.url, oldListing =>
             newListing
               ? applyListingUpdates(newListing, oldListing)
               : oldListing,
@@ -64,7 +72,7 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
       promise?.catch(err =>
         err === "Cancelled" ? undefined : Promise.reject(err),
       );
-      scrapeScheduler?.cancelRequest(listing.url);
+      scrapeScheduler?.cancelRequest(data.url);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listing.dateUpdated, updateListing]);
@@ -88,59 +96,72 @@ export const Listing: React.FC<ListingProps> = ({ listing, updateListing }) => {
         }
       >
         {compactView ? (
-          <CompactIcon src={listing.siteIconUrl} />
+          <CompactIcon src={data.siteIconUrl} />
         ) : (
-          <Icon src={listing.siteIconUrl} />
+          <Icon src={data.siteIconUrl} />
         )}
       </ListItemIcon>
       <ListItemText
         primaryTypographyProps={{
           sx: contentStyle,
           variant: compactView ? "body2" : "body1",
+          component: "div",
         }}
       >
-        <Link href={listing.url} target="_blank" sx={{ flex: "0 0 auto" }}>
-          {listing.siteName || listing.url}
+        <Link href={data.url} target="_blank" sx={{ flex: "0 0 auto" }}>
+          {data.siteName || data.url}
         </Link>
+        <PriceAlertDot
+          ml={compactView ? 3 : 4}
+          data={listing}
+          onClick={() => updateListing(data.url, acknowledgeListingAlert)}
+        />
         <Grid
           container
           alignItems="center"
           justifyContent="flex-end"
           flex="0 1 auto"
         >
-          <Typography
-            variant={compactView ? "body2" : "body1"}
-            color={
-              listing.currentPrice !== listing.originalPrice &&
-              listing.currentPrice === listing.lowestPrice
-                ? "success"
-                : "grey.300"
-            }
-          >
-            Lowest Price: ${listing.lowestPrice?.toFixed(2) ?? " --.--"}
-          </Typography>
+          {(listing.priceDropped || listing.priceIncreased) && (
+            <Typography
+              variant={compactView ? "body2" : "body1"}
+              sx={
+                listing.priceDropped
+                  ? { textDecorationLine: "line-through" }
+                  : undefined
+              }
+              color="grey.600"
+            >
+              {listing.priceDropped
+                ? `$${listing.previousPrice?.price?.toFixed(2) || " --.--"}`
+                : `Lowest Price: $${
+                    listing.lowestPrice.price?.toFixed(2) || " --.--"
+                  }`}
+            </Typography>
+          )}
           <Tooltip
             title={`Last updated: ${new Date(
               listing.dateUpdated,
             ).toLocaleString()}`}
-            placement="left"
+            placement="top"
           >
             <Typography
               component="span"
               variant={compactView ? "body2" : "body1"}
               color={
-                (listing.currentPrice ?? Infinity) <
-                (listing.originalPrice ?? 0)
-                  ? (listing.currentPrice ?? Infinity) <=
-                    (listing.lowestPrice ?? 0)
+                (listing.currentPrice.price ?? Infinity) <
+                (listing.originalPrice.price ?? 0)
+                  ? (listing.currentPrice.price ?? Infinity) <=
+                    (listing.lowestPrice.price ?? 0)
                     ? "success.main"
                     : "success.dark"
                   : undefined
               }
-              flex="0 0 4.5rem"
+              flex="0 0 auto"
+              marginInlineStart={3}
               textAlign="right"
             >
-              ${listing.currentPrice?.toFixed(2) ?? " --.--"}
+              {formatPrice(listing.currentPrice)}
             </Typography>
           </Tooltip>
         </Grid>

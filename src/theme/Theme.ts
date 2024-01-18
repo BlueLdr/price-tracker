@@ -8,6 +8,7 @@ import {
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
 import type { ThemeOptions } from "@mui/material/styles";
+import type { PaletteMode } from "@mui/material";
 
 //================================================
 
@@ -20,33 +21,71 @@ const createMuiThemeForEnvironment =
     ? createTheme
     : unstable_createMuiStrictModeTheme;
 
-const themeCustomization: ThemeOptions = {
+const themeCustomization = (mode: PaletteMode): ThemeOptions => ({
   spacing: 4,
   palette: {
+    mode,
     common: {},
-    grey: {
-      50: "rgba(248, 248, 248, 1)",
-      100: "rgba(242, 242, 242, 1)",
-      200: "rgba(224, 224, 224, 1)",
-      300: "rgba(214, 214, 214, 1)",
-      400: "rgba(204, 204, 204, 1)",
-      500: "rgba(183, 183, 183, 1)",
-      600: "rgba(153, 153, 153, 1)",
-      700: "rgba(102, 102, 102, 1)",
-      800: "rgba(51, 51, 51, 1)",
-      900: "rgba(35, 35, 35, 1)",
-    },
-    text: {
-      primary: "rgba(52, 58, 64, 1)",
-      secondary: "rgba(108, 117, 125, 1)",
-      disabled: "rgba(134, 142, 150, 1)",
-    },
+    grey:
+      mode === "dark"
+        ? {
+            900: "rgba(219, 219, 219, 1)",
+            800: "rgba(204, 204, 204, 1)",
+            700: "rgba(183, 183, 183, 1)",
+            600: "rgba(153, 153, 153, 1)",
+            500: "rgba(102, 102, 102, 1)",
+            400: "rgba(71, 71, 71, 1)",
+            300: "rgba(51, 51, 51, 1)",
+            200: "rgba(43, 43, 43, 1)",
+            100: "rgba(35, 35, 35, 1)",
+            50: "rgba(28, 28, 28, 1)",
+          }
+        : {
+            50: "rgba(248, 248, 248, 1)",
+            100: "rgba(242, 242, 242, 1)",
+            200: "rgba(224, 224, 224, 1)",
+            300: "rgba(214, 214, 214, 1)",
+            400: "rgba(198, 198, 198, 1)",
+            500: "rgba(169, 169, 169, 1)",
+            600: "rgba(150, 150, 150, 1)",
+            700: "rgba(102, 102, 102, 1)",
+            800: "rgba(51, 51, 51, 1)",
+            900: "rgba(35, 35, 35, 1)",
+          },
+    text:
+      mode === "dark"
+        ? {
+            secondary: "rgba(108, 117, 125, 1)",
+            disabled: "rgba(134, 142, 150, 1)",
+          }
+        : {
+            primary: "rgba(52, 58, 64, 1)",
+          },
   },
   typography: {
     htmlFontSize: 16,
+    fontFamily: '"Inter","Roboto","Helvetica","Arial",sans-serif',
     button: {
       fontWeight: 400,
       textTransform: "none",
+    },
+    h1: {
+      fontFamily: '"Hind","Inter","Roboto","Helvetica","Arial",sans-serif',
+    },
+    h2: {
+      fontFamily: '"Hind","Inter","Roboto","Helvetica","Arial",sans-serif',
+    },
+    h3: {
+      fontFamily: '"Hind","Inter","Roboto","Helvetica","Arial",sans-serif',
+    },
+    h4: {
+      fontFamily: '"Hind","Inter","Roboto","Helvetica","Arial",sans-serif',
+    },
+    h5: {
+      fontFamily: '"Hind","Inter","Roboto","Helvetica","Arial",sans-serif',
+    },
+    h6: {
+      fontFamily: '"Hind","Inter","Roboto","Helvetica","Arial",sans-serif',
     },
   },
   components: {
@@ -100,8 +139,15 @@ const themeCustomization: ThemeOptions = {
         disableRipple: true,
       },
     },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: ({ theme }) => ({
+          backgroundColor: theme.palette.grey["500"],
+        }),
+      },
+    },
   },
-};
+});
 
 /*
 type Override = Exclude<EntryOf<ComponentsOverrides<Theme>>, undefined>;
@@ -116,4 +162,6 @@ type Override = Exclude<EntryOf<ComponentsOverrides<Theme>>, undefined>;
 });
 */
 
-export const MuiTheme = createMuiThemeForEnvironment(themeCustomization);
+export const MuiTheme = createMuiThemeForEnvironment(
+  themeCustomization("dark"),
+);

@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 
 import { DragModeContextProvider } from "~/context";
 import {
+  formatPrice,
   removeItemFrom,
   scrapeUrl,
   useApiRequest,
@@ -27,9 +28,9 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import type {
-  Product,
+  ProductData,
   ParsedPageListing,
-  ProductListing,
+  ProductListingData,
   ProductWithUpdates,
 } from "~/utils";
 import type { StyleProps } from "~/theme";
@@ -96,39 +97,45 @@ const scrapeApiRequest = (...args: Parameters<typeof scrapeUrl>) =>
 
 interface FormListingProps {
   index: number;
-  data: ProductListing | ParsedPageListing;
-  onDeleteListing: (listing: ProductListing | ParsedPageListing) => void;
+  data: ProductListingData | ParsedPageListing;
+  onDeleteListing: (listing: ProductListingData | ParsedPageListing) => void;
 }
 
 const FormListing: React.FC<FormListingProps> = ({
   index,
   data: listing,
   onDeleteListing,
-}) => (
-  <ListItem component="div" key={index} disablePadding>
-    <ListItemIcon sx={listItemIconStyle}>
-      <Draggable.Handle sx={{ padding: theme => theme.spacing(1) }} />
-      <Icon src={listing.siteIconUrl} />
-    </ListItemIcon>
-    <ListItemText>
-      <Link href={listing.url} target="_blank">
-        {listing.siteName || listing.url}
-      </Link>
-      <ListItemSecondaryAction sx={listItemActionsStyle}>
-        <Typography component="span" color="success">
-          ${listing.currentPrice}
-        </Typography>
-        <IconButton
-          disabled={!("timestamp" in listing)}
-          type="button"
-          onClick={() => onDeleteListing(listing)}
-        >
-          <DeleteIcon />
-        </IconButton>
-      </ListItemSecondaryAction>
-    </ListItemText>
-  </ListItem>
-);
+}) => {
+  const currentPrice =
+    "history" in listing
+      ? listing.history.slice(-1)[0]
+      : { price: listing.currentPrice };
+  return (
+    <ListItem component="div" key={index} disablePadding>
+      <ListItemIcon sx={listItemIconStyle}>
+        <Draggable.Handle sx={{ padding: theme => theme.spacing(1) }} />
+        <Icon src={listing.siteIconUrl} />
+      </ListItemIcon>
+      <ListItemText>
+        <Link href={listing.url} target="_blank">
+          {listing.siteName || listing.url}
+        </Link>
+        <ListItemSecondaryAction sx={listItemActionsStyle}>
+          <Typography component="span" color="success">
+            {formatPrice(currentPrice)}
+          </Typography>
+          <IconButton
+            disabled={!("timestamp" in listing)}
+            type="button"
+            onClick={() => onDeleteListing(listing)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </ListItemSecondaryAction>
+      </ListItemText>
+    </ListItem>
+  );
+};
 
 //================================================
 
@@ -139,8 +146,8 @@ export interface ProductFormProps {
   onClearListings?: () => void;
 }
 
-export type ProductFormData = Omit<Product, "listings"> & {
-  listings: (ProductListing | ParsedPageListing)[];
+export type ProductFormData = Omit<ProductData, "listings"> & {
+  listings: (ProductListingData | ParsedPageListing)[];
 };
 
 export const ProductForm: React.FC<ProductFormProps> = ({
@@ -204,7 +211,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     listing => !!listing.imageUrl,
   );
 
-  const onDeleteListing = (listing: ProductListing | ParsedPageListing) =>
+  const onDeleteListing = (listing: ProductListingData | ParsedPageListing) =>
     formData.listings
       ? setFormData({
           imageUrl:

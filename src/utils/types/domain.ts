@@ -1,39 +1,41 @@
-export interface Product {
+//================================================
+// serializable data
+//================================================
+
+export interface ProductData {
   name: string;
   imageUrl?: string;
-  currentPrice?: number;
-  lowestPrice?: ProductListingSnapshot;
-  listings: ProductListing[];
+  listings: ProductListingData[];
   open?: boolean;
 }
 
-export interface ProductListing {
+export interface ProductListingData {
   url: string;
   productName?: string;
   imageUrl?: string;
   siteName?: string;
   siteIconUrl?: string;
-  currentPrice?: number;
-  originalPrice?: number;
-  lowestPrice?: number;
-  dateAdded: number;
-  dateUpdated: number;
-  history: ProductListingSnapshot[];
+  history: ProductListingHistoryEntry[];
 }
 
-export type ProductListingSnapshot = Pick<
-  ProductListing,
-  "url" | "currentPrice" | "dateUpdated"
->;
+export interface ProductListingHistoryEntry {
+  price?: number;
+  dateAdded: number;
+  dateUpdated: number;
+  acknowledged?: boolean;
+}
+
+export type ProductListingSnapshot = ProductListingHistoryEntry &
+  Pick<ProductListingData, "url" | "siteIconUrl" | "siteName">;
 
 export interface ProductGroup {
   name: string;
   open?: boolean;
-  products: Product[];
+  products: ProductData[];
 }
 
-export interface ProductWithUpdates extends Omit<Product, "listings"> {
-  listings: (ProductListing | ParsedPageListing)[];
+export interface ProductWithUpdates extends Omit<ProductData, "listings"> {
+  listings: (ProductListingData | ParsedPageListing)[];
 }
 
 export interface ParsedPageListing {

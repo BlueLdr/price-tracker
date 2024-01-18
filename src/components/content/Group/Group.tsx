@@ -10,16 +10,14 @@ import {
 } from "~/components";
 import { removeItemFrom, replaceItemIn } from "~/utils";
 import { DragModeContext, ModalsContext, PrefsContext } from "~/context";
+import { ActionsMenu } from "./ActionsMenu";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 
-import type { Product, ProductGroup, Updater } from "~/utils";
+import type { ProductData, ProductGroup, Updater } from "~/utils";
 
 //================================================
 
@@ -42,7 +40,7 @@ const GroupBase: React.FC<GroupProps> = ({
   const { isTarget } = useContext(DraggableBinContext);
   const { isActive } = useContext(DraggableItemContext);
 
-  const updateProduct = useCallback<Updater<Product, "name">>(
+  const updateProduct = useCallback<Updater<ProductData, "name">>(
     (id, newProduct) => {
       updateGroup(group.name, curGroup => ({
         ...curGroup,
@@ -60,7 +58,7 @@ const GroupBase: React.FC<GroupProps> = ({
     [group.name, updateGroup],
   );
   const removeProduct = useCallback(
-    (id: Product["name"]) => {
+    (id: ProductData["name"]) => {
       updateGroup(group.name, curGroup => ({
         ...curGroup,
         products: removeItemFrom(curGroup.products, item => item.name === id),
@@ -105,36 +103,20 @@ const GroupBase: React.FC<GroupProps> = ({
       }}
       size={compactView ? "md" : undefined}
       actions={
-        dragEnabled
-          ? []
-          : [
-              <IconButton
-                key="add"
-                size={compactView ? "small" : undefined}
-                onClick={() =>
-                  setAddProductTarget({
-                    target: undefined,
-                    onSave: updateProduct,
-                  })
-                }
-              >
-                <AddIcon />
-              </IconButton>,
-              <IconButton
-                key="edit"
-                size={compactView ? "small" : undefined}
-                onClick={() => onClickEdit(group)}
-              >
-                <EditIcon />
-              </IconButton>,
-              <IconButton
-                key="delete"
-                size={compactView ? "small" : undefined}
-                onClick={() => onClickRemove(group)}
-              >
-                <DeleteIcon />
-              </IconButton>,
-            ]
+        dragEnabled ? undefined : (
+          <ActionsMenu
+            group={group}
+            updateGroup={updateGroup}
+            onClickAdd={() =>
+              setAddProductTarget({
+                target: undefined,
+                onSave: updateProduct,
+              })
+            }
+            onClickEdit={onClickEdit}
+            onClickRemove={onClickRemove}
+          />
+        )
       }
     >
       <Box pl={compactView ? 18 : 24}>
@@ -182,7 +164,7 @@ const GroupBase: React.FC<GroupProps> = ({
 
 export const Group: React.FC<GroupProps> = ({ updateGroup, ...props }) => {
   const updateList = useCallback(
-    (transform: (items: Product[]) => Product[]) =>
+    (transform: (items: ProductData[]) => ProductData[]) =>
       updateGroup(props.data.name, group => ({
         ...group,
         products: transform(group.products),

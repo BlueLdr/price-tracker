@@ -4,10 +4,9 @@ const Document = () => {
   return (
     <Html lang="en">
       <Head>
-        <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
         <link
           rel="stylesheet"
-          href="https://fonts.cdnfonts.com/css/space-mono"
+          href="https://fonts.googleapis.com/css?family=Inter|Hind"
         />
       </Head>
       <body className="font-sans text-base">

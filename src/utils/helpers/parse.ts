@@ -21,7 +21,7 @@ const parsePrice = (text: string | null | undefined) => {
   if (text == null) {
     return;
   }
-  const value = Number(text.replace(/[^0-9.,]/g, ""));
+  const value = Number(text.replace(/[^0-9.]/g, ""));
   return isNaN(value) ? undefined : value;
 };
 
@@ -47,6 +47,7 @@ const SITE_PARSER_MAP: Record<
           "//*[contains(@class,'price-format')][contains(text(),'$')]",
         )?.textContent,
       ),
+    siteName: () => "Guitar Center",
   },
   "www.amazon.com": {
     currentPrice: doc =>

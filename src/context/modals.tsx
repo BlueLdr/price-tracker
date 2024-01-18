@@ -2,8 +2,8 @@ import { createContext, useMemo, useState } from "react";
 
 import type {
   ModalTarget,
-  Product,
-  ProductListing,
+  ProductData,
+  ProductListingData,
   ValueAndSetter,
   WithChildren,
 } from "~/utils";
@@ -12,27 +12,27 @@ import type {
 
 export type ModalsContext = ValueAndSetter<
   "addProductTarget",
-  ModalTarget<Product, "name"> | undefined
+  ModalTarget<ProductData, "name"> | undefined
 > &
   ValueAndSetter<
     "editProductTarget",
-    ModalTarget<Product, "name"> | undefined
+    ModalTarget<ProductData, "name"> | undefined
   > &
   ValueAndSetter<
     "deleteProductTarget",
-    ModalTarget<Product, "name"> | undefined
+    ModalTarget<ProductData, "name"> | undefined
   > &
   ValueAndSetter<
     "addListingTarget",
-    ModalTarget<ProductListing, "url"> | undefined
+    ModalTarget<ProductListingData, "url"> | undefined
   > &
   ValueAndSetter<
     "editListingTarget",
-    ModalTarget<ProductListing, "url"> | undefined
+    ModalTarget<ProductListingData, "url"> | undefined
   > &
   ValueAndSetter<
     "deleteListingTarget",
-    ModalTarget<ProductListing, "url"> | undefined
+    ModalTarget<ProductListingData, "url"> | undefined
   >;
 
 export const ModalsContext = createContext<ModalsContext>({
@@ -52,18 +52,18 @@ export const ModalsContext = createContext<ModalsContext>({
 
 export const ModalsContextProvider: React.FC<WithChildren> = ({ children }) => {
   const [editProductTarget, setEditProductTarget] =
-    useState<ModalTarget<Product, "name">>();
+    useState<ModalTarget<ProductData, "name">>();
   const [deleteProductTarget, setDeleteProductTarget] =
-    useState<ModalTarget<Product, "name">>();
+    useState<ModalTarget<ProductData, "name">>();
   const [addProductTarget, setAddProductTarget] =
-    useState<ModalTarget<Product, "name">>();
+    useState<ModalTarget<ProductData, "name">>();
 
   const [editListingTarget, setEditListingTarget] =
-    useState<ModalTarget<ProductListing, "url">>();
+    useState<ModalTarget<ProductListingData, "url">>();
   const [deleteListingTarget, setDeleteListingTarget] =
-    useState<ModalTarget<ProductListing, "url">>();
+    useState<ModalTarget<ProductListingData, "url">>();
   const [addListingTarget, setAddListingTarget] =
-    useState<ModalTarget<ProductListing, "url">>();
+    useState<ModalTarget<ProductListingData, "url">>();
 
   const value = useMemo(
     () => ({
